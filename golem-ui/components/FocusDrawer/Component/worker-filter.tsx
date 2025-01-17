@@ -51,7 +51,7 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { SelectRangeEventHandler } from "react-day-picker";
 import { useWorkerSearchContext } from "./search-provider";
 
@@ -78,10 +78,6 @@ export const WorkerFilter: FC<DrawerProps> = ({ componentVersions }) => {
     setFields({ dateRange });
   };
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    console.log(statuses);
-  }, [statuses]);
 
   const CommandInlineButtons = () => {
     return (

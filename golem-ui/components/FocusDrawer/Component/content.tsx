@@ -12,7 +12,6 @@ import { FC } from "react";
 import { Badge } from "../../ui/badge";
 import { Card, CardTitle } from "../../ui/card";
 import { ExportTable } from "../exports-table/exports-table";
-import { FocusProvider } from "../item-provider";
 import MetricCard from "../metric-card";
 import { SideColumn } from "../side-column";
 import { WorkerSearchProvider } from "./search-provider";
@@ -28,7 +27,7 @@ export const DrawerContent: FC<DrawerProps> = async ({
   componentId,
   itemMetaData,
 }) => {
-    console.log({ componentId });
+
   const workers = await fetchWorkersWithFilters(componentId);
   const componentVersions: Component[] = await fetchComponentVersions(componentId);
 
@@ -36,7 +35,6 @@ export const DrawerContent: FC<DrawerProps> = async ({
 
   return (
     <WorkerSearchProvider>
-      <FocusProvider>
         <Card className="col-span-full row-span-full grid gap-0">
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel
@@ -126,7 +124,6 @@ export const DrawerContent: FC<DrawerProps> = async ({
             </ResizablePanel>
           </ResizablePanelGroup>
         </Card>
-      </FocusProvider>
     </WorkerSearchProvider>
   );
 };

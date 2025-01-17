@@ -1,13 +1,15 @@
 "use client";
 
 import { Component, ItemType } from "@/lib/types";
-import { useRouter } from "next/navigation";
+import { redirect, RedirectType } from "next/navigation";
 import {
   createContext,
   FC,
   ReactNode,
   useContext,
-  useState
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 
 type FocusContext = {
@@ -25,10 +27,10 @@ type FocusContext = {
 export const FocusContext = createContext<FocusContext | null>(null);
 
 export const FocusProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const router = useRouter();
   const [componentId, setComponentId] = useState<string>();
   const [workerId, setWorkerId] = useState<string>();
 
+  console.log(componentId)
   const [focusItemMetadata, setFocusItemMetaData] = useState<Component>();
 
   const setFocusItem = (params: {
@@ -36,37 +38,48 @@ export const FocusProvider: FC<{ children: ReactNode }> = ({ children }) => {
     workerId?: string;
     metadata?: Component;
   }) => {
-    const { componentId, workerId, metadata } = params;
+    const {
+      componentId: newComponentId,
+      workerId: newWorkerId,
+      metadata,
+    } = params;
+    setFocusItemMetaData(metadata)
+    let finalComponentId = componentId,
+      finalWorkerId = workerId;
     if ("workerId" in params) {
-      setWorkerId(workerId);
+      setWorkerId(newWorkerId);
+      finalWorkerId = newWorkerId;
     }
     if ("componentId" in params) {
-      setComponentId(componentId);
+      setComponentId(newComponentId);
+      finalComponentId = newComponentId;
     }
-    if (componentId) {
-      setComponentId(componentId);
-      const path = `/${ItemType.component}/${componentId.toLowerCase()}${
-        workerId ? `/${ItemType.worker}/${workerId}` : ""
+    console.log({
+      finalComponentId,
+      componentId,
+      newComponentId,
+      finalWorkerId,
+    });
+    if (finalComponentId) {
+      const path = `/${ItemType.component}/${finalComponentId.toLowerCase()}${
+        finalWorkerId ? `/${ItemType.worker}/${finalWorkerId}` : ""
       }`;
-      router.push(path);
+      redirect(path, RedirectType.replace);
     } else {
-      router.push("/");
+      redirect("/", RedirectType.replace);
     }
 
-    setFocusItemMetaData(metadata);
   };
 
+  useEffect(() => console.log(componentId), [componentId])
+
+  const context = useMemo(
+    () => ({ componentId, workerId, focusItemMetadata, setFocusItem }),
+    [componentId, workerId, focusItemMetadata, setFocusItem]
+  );
+
   return (
-    <FocusContext.Provider
-      value={{
-        componentId,
-        workerId,
-        focusItemMetadata,
-        setFocusItem,
-      }}
-    >
-      {children}
-    </FocusContext.Provider>
+    <FocusContext.Provider value={context}>{children}</FocusContext.Provider>
   );
 };
 

@@ -25,7 +25,9 @@ export const FocusDrawer = ({
   const finalItemId = (workerId ?? pageWorkerId) ??  (componentId ?? pageComponentId)
 
   useEffect(() => {
+    console.dir({ pageComponentId, componentId})
     if (!(workerId ?? componentId)) {
+      console.log(workerId ?? componentId)
       setFocusItem({
         componentId: pageComponentId,
         workerId: pageWorkerId,

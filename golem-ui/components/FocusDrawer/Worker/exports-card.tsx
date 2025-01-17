@@ -4,7 +4,6 @@ import { Component, GolemWorker } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import { FC } from "react";
-import { useFocusContext } from "../item-provider";
 
 type EnvVarsCardProps = {
   workerEnv: GolemWorker["env"];
@@ -12,7 +11,6 @@ type EnvVarsCardProps = {
 };
 
 export const EnvVarsCard: FC<EnvVarsCardProps> = ({ workerEnv, itemMetaData }) => {
-  const { setFocusItem } = useFocusContext();
 
   return (
     <div className="flex justify-between flex-row items-center">

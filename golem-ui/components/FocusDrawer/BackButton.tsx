@@ -14,7 +14,7 @@ export const BackButton: FC<{
   const { setFocusItem } = useFocusContext();
   return (
     <Button
-      onClick={() => setFocusItem({ componentId })}
+      onClick={() => setFocusItem({ componentId, workerId: undefined })}
       className={cn("w-min gap-1 text-sm opacity-70 transition-colors text-neutral-600 hover:text-[inherit] mb-1", className)}
       size={"xs"}
       variant={"outline"}
