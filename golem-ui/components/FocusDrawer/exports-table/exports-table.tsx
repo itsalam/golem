@@ -14,8 +14,8 @@ export const ExportTable: FC<ExportTableProps> = async ({ exp }) => {
 
   return (
     <div className="sticky top-0">
-      <div className="p-2 bg-neutral-50">
-        <Accordion type="single" collapsible className="grid grid-flow-dense grid-cols-[min-content_max-content_max-content_max-content] auto-cols-auto gap-y-4 mr-2 ">
+      <div className="p-2 pl-4 bg-neutral-50">
+        <Accordion type="single" collapsible className="grid grid-flow-dense grid-cols-[min-content_max-content_max-content] auto-cols-auto gap-y-2 mr-3">
             {exp.functions.map((func) => (
               <FunctionCard func={func} key={func.name} exp={exp}/>
             ))}

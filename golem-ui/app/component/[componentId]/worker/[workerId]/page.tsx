@@ -5,21 +5,21 @@ import { Component, ItemType } from "@/lib/types";
 
 interface Params {
     params: {
-        itemId: string;
+        componentId: string;
         workerId: string;
     }
 }
 
 export default async function ItemPage(paramsPromise: Promise<Params>) {
     const {params} = await paramsPromise;
-    const { itemId, workerId } = await params;
+    const { componentId, workerId } = await params;
     const componentData: Component[] = await fetchComponents()
-    const itemMetadata = componentData.find((c) => c.versionedComponentId.componentId === itemId)
+    const itemMetadata = componentData.find((c) => c.versionedComponentId.componentId === componentId)
     // Fetch data using itemType and itemId
 
     return (
-      <FocusDrawer itemId={workerId} itemType={ItemType.component} itemMetaData={itemMetadata}>
-        <DrawerContent componentId={itemId} itemType={ItemType.component} itemMetaData={itemMetadata} workerId={workerId}/>
+      <FocusDrawer componentId={componentId} workerId={workerId} itemMetaData={itemMetadata}>
+        <DrawerContent componentId={componentId} itemType={ItemType.worker} itemMetaData={itemMetadata} workerId={workerId}/>
       </FocusDrawer>
     );
   }

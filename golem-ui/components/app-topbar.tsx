@@ -52,7 +52,7 @@ const AppTopbar: React.FC = () => {
     const router = usePathname();
     const isPathed = !!router.split("/")[1]
     return (
-    <div className="static h-16 w-full flex justify-between px-6 pl">
+    <div className="static h-12 w-full flex justify-between px-6">
     <Breadcrumb className='my-auto'>
       {!isPathed? <p className='text-sm'>Welcome, Not you</p> : <BreadcrumbList>
         <BreadcrumbItem>

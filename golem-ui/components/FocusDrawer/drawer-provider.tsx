@@ -9,7 +9,7 @@ interface DrawerContextProps {
     closeDrawer: () => void;
     invokeFunc?: FunctionDetails;
     exp?: Export;
-    setInvokeDetails: (f: FunctionDetails, e: Export) => void;
+    setInvokeDetails: (f?: FunctionDetails, e?: Export) => void;
 }
 
 const DrawerContext = createContext<DrawerContextProps | undefined>(undefined);
@@ -36,9 +36,14 @@ export const DrawerProvider: React.FC<DrawerProviderProps> = ({ children }) => {
     const openDrawer = () => setIsOpen(true);
     const closeDrawer = () => setIsOpen(false);
 
-    const setInvokeDetails = (func: FunctionDetails, exp: Export) => {
-        setInvokingFunc(func);
-        setExport(exp);
+    const setInvokeDetails = (func?: FunctionDetails, exp?: Export) => {
+        if(invokeFunc?.name === func?.name){
+            setInvokingFunc(undefined)
+            setExport(undefined);
+        } else {
+            setInvokingFunc(func);
+            setExport(exp);
+        }
     }
 
     return (

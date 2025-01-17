@@ -1,3 +1,5 @@
+import { DateRange } from "react-day-picker";
+
 // Main Component Type
 export type Component = {
   componentName: string;
@@ -138,3 +140,31 @@ export enum WitTypes {
   flags = "interface", // Each flag becomes an optional boolean property
   resource = "class", // Methods become class methods
 }
+
+export enum VersionComparison {
+  LESS_EQ = "<=",
+  EQ = "=",
+  GREATER_EQ = ">=",
+}
+
+export const StringComparison: Record<string, string> = {
+  "==": "==",
+  "!=": "!=",
+  like: "≈≈",
+  notlike: "!≈≈",
+};
+
+export enum SortValues {
+  Name = "name",
+  Date = "date",
+  Version = "version",
+}
+
+export type WorkerSearchFields = {
+  name?: string;
+  nameComparison?: keyof typeof StringComparison;
+  statuses?: WorkerStatus[];
+  version?: number;
+  versionComparison?: VersionComparison;
+  dateRange?: DateRange;
+};

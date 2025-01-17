@@ -57,10 +57,11 @@ DrawerContent.displayName = "DrawerContent"
 
 const DrawerHeader = ({
   className,
+  isSubHeader = false,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+}: React.HTMLAttributes<HTMLDivElement> & { isSubHeader?: boolean }) => (
   <div
-    className={cn("grid gap-1.5 p-4 text-center sm:text-left", className)}
+    className={cn("flex flex-col px-6 justify-center top-0 bg-card border-b-2 border-l", className, isSubHeader? "" : "min-h-36 h-36")}
     {...props}
   />
 )
@@ -105,14 +106,7 @@ const DrawerDescription = React.forwardRef<
 DrawerDescription.displayName = DrawerPrimitive.Description.displayName
 
 export {
-  Drawer,
-  DrawerPortal,
-  DrawerOverlay,
-  DrawerTrigger,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerDescription,
+  Drawer, DrawerClose,
+  DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerOverlay, DrawerPortal, DrawerTitle, DrawerTrigger
 }
+

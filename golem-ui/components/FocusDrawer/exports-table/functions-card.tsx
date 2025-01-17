@@ -1,19 +1,15 @@
 "use client";
 
 import {
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+    AccordionItem
 } from "@/components/ui/accordion";
 import { Export, FunctionDetails, Parameter, Result } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { ChevronRight } from "lucide-react";
 import { FC, Fragment } from "react";
 import { Badge } from "../../ui/badge";
 import { useDrawer } from "../drawer-provider";
 import { ExportType } from "./export-type";
-
-type ExportTableProps = {
-  exp: Export;
-};
 
 const ParamsCell: FC<{ params: (Result | Parameter)[]; title: string }> = ({
   params,
@@ -22,7 +18,7 @@ const ParamsCell: FC<{ params: (Result | Parameter)[]; title: string }> = ({
   
   return (
     <div className="flex flex-col">
-      <p className="text-xs text-neutral-500">{title}</p>
+      <p className="text-xs text-neutral-600">{title}</p>
       <div className="font-mono text-xs">
         {params.map((p, index) => (
           <Fragment key={index}>
@@ -37,7 +33,7 @@ const ParamsCell: FC<{ params: (Result | Parameter)[]; title: string }> = ({
           </Fragment>
         ))}
         {!params.length && !params.some((p) => p.name) && (
-          <span className="text-neutral-300">{"{}"}</span>
+          <span className="text-neutral-400">{"{}"}</span>
         )}
       </div>
     </div>
@@ -51,7 +47,7 @@ export const FunctionCard = ({
   func: FunctionDetails;
   exp: Export;
 }) => {
-  const context = useDrawer();
+  const {setInvokeDetails, invokeFunc} = useDrawer();
 //   const schema = createZodSchema(func.parameters[0])
 //   const form = useForm<z.infer<typeof schema>>({
 //     resolver: zodResolver(schema),
@@ -69,32 +65,24 @@ export const FunctionCard = ({
   return (
     <AccordionItem
       value={func.name}
-      className="grid col-span-5 grid-cols-subgrid row-span-2 rounded-lg border bg-card text-card-foreground shadow-sm p-4 items-center justify-start w-full"
+      className={cn("grid col-span-5 grid-cols-subgrid row-span-2 rounded-lg border bg-card text-card-foreground shadow-sm p-4 items-center justify-start w-full hover:bg-neutral-50", invokeFunc?.name === func.name && "bg-neutral-100")}
       key={func.name}
     >
-      <AccordionTrigger
-        className="py-0 grid col-span-5 grid-cols-subgrid row-span-1 items-center gap-4 justify-start w-full text-left"
+      <div
+        className="flex-1 transition-all py-0 grid col-span-5 grid-cols-subgrid row-span-1 items-center gap-4 justify-start w-full text-left"
         key={func.name}
-        onClick={() => context.setInvokeDetails(func, exp)}
+        onClick={() => setInvokeDetails(func, exp)}
       >
-        <Badge className="font-mono text-xs w-min h-min">API</Badge>
+        <Badge className="font-mono text-xs w-min h-min hidden lg:block">API</Badge>
         <div className="flex flex-col px-0">
-          <div className="font-light text-xs text-neutral-500">{exp.name}</div>
-          <div className="font-medium">{func.name}</div>
+          <div className="font-light text-xs text-neutral-600">{exp.name}</div>
+          <div className="font-medium lg:text-base text-sm">{func.name}</div>
         </div>
 
         <ParamsCell params={func.parameters} title={"Input Params"} />
         <ParamsCell params={func.results} title={"Output Params"} />
-      </AccordionTrigger>
-      <AccordionContent containerClassName="col-span-full hidden"
-      className="grid auto-rows-auto grid-cols-2 gap-4 p-4">
-        {/* <Form {...form}>
-          
-          {schemaKeys.map(([key, zodtype]) => {
-            return <FormEntry name={key} zod={zodtype as ZodTypeAny} form={form} key={key} placeHolder={getTypeFromParameterName(key, func.parameters[0])}/>
-          })}
-        </Form> */}
-      </AccordionContent>
+        <ChevronRight size={16} className="text-neutral-600 transition-all ml-auto"/>
+      </div>
     </AccordionItem>
   );
 };

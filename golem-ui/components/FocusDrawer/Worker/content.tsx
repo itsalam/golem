@@ -1,25 +1,29 @@
 import { GOLEM_ENDPOINT } from "@/lib/client";
-import { Component, GolemWorker, WorkerStatus } from "@/lib/types";
+import { Component, GolemWorker } from "@/lib/types";
 
+import { getStatusColor, getStatusIcon } from "@/components/helpers";
+import { DrawerHeader } from "@/components/ui/drawer";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
-  Activity,
-  AlertCircle,
-  ChevronsRight,
-  CircleX,
-  Cpu,
   Gauge,
-  LogOut,
-  LucideIcon,
+  MemoryStick,
+  Pickaxe
 } from "lucide-react";
 import { FC } from "react";
 import { Badge } from "../../ui/badge";
-import { Card, CardHeader, CardTitle, SideCardHeader } from "../../ui/card";
+import { Card, CardTitle } from "../../ui/card";
+import { BackButton } from "../BackButton";
 import { ExportTable } from "../exports-table/exports-table";
 import MetricCard from "../metric-card";
 import { SideColumn } from "../side-column";
 import { EnvVarsCard } from "./exports-card";
+import { WorkerDropdown } from "./worker-dropdown";
 
 type DrawerProps = {
   componentId: string;
@@ -31,7 +35,6 @@ type DrawerProps = {
 export const DrawerContent: FC<DrawerProps> = async ({
   componentId,
   workerId,
-  itemType,
   itemMetaData: componentMetadata,
 }) => {
   const {
@@ -46,22 +49,12 @@ export const DrawerContent: FC<DrawerProps> = async ({
     GOLEM_ENDPOINT + `/v1/components/${componentId}/workers/${workerId}`
   ).then((v) => v.json());
 
-  const WorkerStatusMap: Record<WorkerStatus, LucideIcon> = {
-    [WorkerStatus.Running]: ChevronsRight,
-    [WorkerStatus.Idle]: Activity,
-    [WorkerStatus.Suspended]: AlertCircle,
-    [WorkerStatus.Interrupted]: CircleX,
-    [WorkerStatus.Retrying]: AlertCircle,
-    [WorkerStatus.Failed]: CircleX,
-    [WorkerStatus.Exited]: LogOut,
-  };
-
-  const StatusIcon = WorkerStatusMap[status as WorkerStatus];
+  const StatusIcon = getStatusIcon(status);
 
   const MainContent = () => (
     <div className="row-start-2 w-full h-full overflow-auto">
       {componentMetadata?.metadata.exports.map((exp) => {
-        return <ExportTable exp={exp} />;
+        return <ExportTable exp={exp} key={exp.name} />;
       })}
     </div>
   );
@@ -72,7 +65,7 @@ export const DrawerContent: FC<DrawerProps> = async ({
     >
       <div className="bg-card border-b text-sm p-4 overflow-auto">
         {Object.keys(args).length === 0 ? (
-          <p className="text-neutral-500 text-sm text-center">
+          <p className="text-neutral-600 text-sm text-center">
             {" "}
             No environment varibles have been set.
           </p>
@@ -92,16 +85,13 @@ export const DrawerContent: FC<DrawerProps> = async ({
         )}
       </div>
 
-      <SideCardHeader>
-        <h4 className="text-lg font-semibold flex gap-2">Files</h4>
-        <div className="flex items-center">
-          <MetricCard className="border-r pl-0"></MetricCard>
-        </div>
-      </SideCardHeader>
+      <DrawerHeader isSubHeader>
+        <h4 className="text-lg font-semibold flex gap-2 py-4">Files</h4>
+      </DrawerHeader>
       <div className="bg-card border-b text-sm p-4 overflow-auto">
         {!componentMetadata ||
         Object.keys(componentMetadata.files).length === 0 ? (
-          <p className="text-neutral-500 text-sm text-center">
+          <p className="text-neutral-600 text-sm text-center">
             No Files have been added.
           </p>
         ) : (
@@ -120,12 +110,9 @@ export const DrawerContent: FC<DrawerProps> = async ({
         )}
       </div>
 
-      <SideCardHeader>
-        <h4 className="text-lg font-semibold flex gap-2">Metadata</h4>
-        <div className="flex items-center">
-          <MetricCard className="border-r pl-0"></MetricCard>
-        </div>
-      </SideCardHeader>
+      <DrawerHeader isSubHeader>
+        <h4 className="text-lg font-semibold flex gap-2 py-4">Metadata</h4>
+      </DrawerHeader>
       <Table
         containerClassName="py-4 bg-card border-b"
         className="flex-1 border-b text-sm"
@@ -161,70 +148,89 @@ export const DrawerContent: FC<DrawerProps> = async ({
   );
 
   return (
-    <Card className="col-span-2 row-span-full grid grid-cols-subgrid grid-rows-subgrid">
-      <div className="grid grid-cols-subgrid row-span-1 grid-rows-subgrid col-span-1 h-min border-b-2">
-        <div className="flex justify-between">
-          <CardHeader className="justify-center">
-            <CardTitle className="inline-flex items-center gap-2">
-              {workerIdObj.workerName}
-            </CardTitle>
-            <Badge className="text-sm w-min leading-none py-1 px-1.5 font-mono tracking-wide">
-              v{componentVersion}
-            </Badge>
-          </CardHeader>
-          <div className="flex items-center">
-            <MetricCard
-              className="border-r pl-0"
-              titleContent={
-                <>
-                  <p>Status</p>
-                </>
-              }
-            >
-              <div className="flex items-center gap-1">
-                {status}
-                {
-                  <StatusIcon
-                    className={cn("h-4 w-4 ", {
-                      "text-green-600": status === WorkerStatus.Running,
-                      "text-blue-600": status === WorkerStatus.Idle,
-                      "text-red-600":
-                        status === WorkerStatus.Failed ||
-                        status === WorkerStatus.Interrupted,
-                      "text-yellow-600":
-                        status === WorkerStatus.Retrying ||
-                        status === WorkerStatus.Suspended,
-                    })}
-                  />
-                }
+    <Card className="col-span-full row-span-full grid gap-0">
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel
+          className="h-auto border-b-2 flex flex-col"
+          defaultSize={66}
+        >
+          <DrawerHeader className="flex-row justify-between h-36 pr-0">
+            <div className="flex flex-col justify-center flex-1 relative">
+            <WorkerDropdown/>
+              <BackButton
+                className="left-6 top-2"
+                componentId={componentId}
+                componentName={componentMetadata?.componentName}
+              />
+              <CardTitle className="inline-flex items-center gap-2">
+                {workerIdObj.workerName}
+              </CardTitle>
+
+              <div className="text-neutral-400 inline-flex items-center leading-none gap-2 py-1">
+                <Badge className="text-sm w-min leading-none py-1 px-1.5 font-mono tracking-wide">
+                  v{componentVersion}
+                </Badge>
+                <h5 className="flex items-center gap-0.5">
+                  <Pickaxe size={16} />
+                {"Worker"}
+                </h5>
               </div>
-            </MetricCard>
-            <MetricCard
-              className="border-r"
-              titleContent={
-                <>
-                  <p>Memory Usage</p>
-                  <Gauge className="h-4 w-4 text-neutral-600" />
-                </>
-              }
-            >
-              {Math.floor(totalLinearMemorySize / Math.pow(1024, 2))}MB
-            </MetricCard>
-            <MetricCard
-              titleContent={
-                <>
-                  <p>Resources</p>
-                  <Cpu className="h-4 w-4 text-neutral-600" />
-                </>
-              }
-            >
-              {0}
-            </MetricCard>
-          </div>
-        </div>
-      </div>
-      <MainContent />
-      <SideContent />
+            </div>
+            <div className="flex items-start flex-col justify-evenly border-l">
+              <div className={cn("flex-1 flex items-center border-b w-full pl-3", getStatusColor(status))}>
+                <StatusIcon
+                  className={cn(
+                    "h-4 w-4"
+                  )}
+                />
+                <MetricCard
+                  className="py-0"
+                  titleContent={
+                    <>
+                      <p className="text-[unset]">Status</p>
+                    </>
+                  }
+                >
+                  <div className="flex items-center gap-1">{status}</div>
+                </MetricCard>
+              </div>
+              <div className="flex-1 flex border-b items-center w-full pl-3">
+                <Gauge className="h-4 w-4 text-neutral-600" />
+                <MetricCard
+                  className="py-0"
+                  titleContent={
+                    <>
+                      <p>Memory Usage</p>
+                    </>
+                  }
+                >
+                  {Math.floor(totalLinearMemorySize / Math.pow(1024, 2))}MB
+                </MetricCard>
+              </div>
+              <div className="flex-1 flex items-center w-full pl-3">
+                <MemoryStick className="h-4 w-4 text-neutral-600" />
+                <MetricCard
+                  className="py-0"
+                  titleContent={
+                    <>
+                      <p>Resources</p>
+                    </>
+                  }
+                >
+                  {0}
+                </MetricCard>
+              </div>
+            </div>
+          </DrawerHeader>
+          <MainContent />
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel className="min-w-min flex flex-col">
+          <SideContent />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </Card>
   );
 };

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
+import { z, ZodTypeAny } from "zod";
 import { Case, Parameter, TypeDefinition, WitTypes } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
@@ -76,22 +76,26 @@ const getTypeDefValue = (typeDef: TypeDefinition) =>
     ? formatWITDataType(typeDef.type)
     : formatTypeDefs(typeDef as TypeDefinition); // Recursive call
 
+interface NestedTypeDef {
+  [key: string]: NestedTypeDef | ZodTypeAny | string;
+}
+
 export function formatTypeDefs(typeDefs: TypeDefinition): {
-  fields?: Record<string, any>;
-  cases?: Record<string, any>;
-  inner?: Record<string, any>;
+  fields?: NestedTypeDef;
+  cases?: NestedTypeDef;
+  inner?: NestedTypeDef;
 } {
   let res = {};
 
   if (typeDefs.fields) {
-    const fields = typeDefs.fields.reduce<Record<string, any>>((acc, field) => {
+    const fields = typeDefs.fields.reduce<NestedTypeDef>((acc, field) => {
       acc[field.name] = getTypeDefValue(field.typ);
       return acc;
     }, {});
     res = { fields, ...res };
   }
   if (typeDefs.cases) {
-    const cases = typeDefs.cases.reduce<Record<string, any>>((acc, field) => {
+    const cases = typeDefs.cases.reduce<NestedTypeDef>((acc, field) => {
       acc[field.name] = getTypeDefValue(field.typ);
       return acc;
     }, {});
@@ -124,16 +128,19 @@ const WitToZodPrimitive: Record<string, () => z.ZodTypeAny> = {
       .describe("s64"),
   f32: () => z.number().describe("f32"),
   f64: () => z.number().describe("f64"),
-  char: () => z.string().length(1).describe("char"),
+  char: () => z.string().length(1),
   str: () => z.string().describe("str"),
 };
 
 export const createZodSchema = (parameters: Parameter[]) => {
   return z.object(
-    parameters.reduce((acc, p) => {
-      acc[p.name] = createZodSchemaFromParam(p);
-      return acc;
-    }, {} as Record<string, z.ZodTypeAny>)
+    parameters.reduce(
+      (acc, p) => {
+        acc[p.name] = createZodSchemaFromParam(p);
+        return acc;
+      },
+      {} as Record<string, z.ZodTypeAny>
+    )
   );
 };
 
@@ -147,27 +154,27 @@ export const createZodSchemaFromParam = (
 
   if (typ.cases && name) {
     const cases = typ.cases.reduce((acc, field) => {
-      acc = acc.merge(createZodSchemaFromParam(field));
+      const schema = createZodSchemaFromParam(field);
+      acc = acc.merge(z.object({ [field.name]: schema }));
       // acc[field.name] = createZodSchema(field.typ)
       return acc;
     }, z.object({}));
     res = res.merge(z.object({ [name]: cases }));
   } else if (typ.fields && name) {
     const fields = typ.fields.reduce((acc, field) => {
-      acc = acc.merge(createZodSchemaFromParam(field));
+      const schema = createZodSchemaFromParam(field);
+      acc = acc.merge(z.object({ [field.name]: schema }));
       // acc[field.name] = createZodSchema(field.typ)
       return acc;
     }, z.object({}));
-    res = res.merge(z.object({ [name]: fields }));
+    res = res.merge(fields);
   } else if (typ.inner) {
     const inner = z.object({
       [typ.inner.type]: createZodSchemaFromParam({ typ: typ.inner }),
     });
     res = res.merge(inner);
   } else if (name) {
-    res = z.object({
-      [name]: WitToZodPrimitive[typ.type.toLocaleLowerCase()](),
-    });
+    return WitToZodPrimitive[typ.type.toLocaleLowerCase()]();
   }
   return res;
 };
@@ -192,7 +199,7 @@ export const getTypeFromParameterName = (
   if (typ.cases) {
     const cases = typ.cases.reduce((acc, field) => {
       const res = getTypeFromParameterName(targetName, field);
-      res && acc.push(res);
+      if (res) acc.push(res);
       return acc;
     }, [] as string[]);
     if (cases.length) {
@@ -201,7 +208,7 @@ export const getTypeFromParameterName = (
   } else if (typ.fields) {
     const fields = typ.fields.reduce((acc, field) => {
       const res = getTypeFromParameterName(targetName, field);
-      res && acc.push(res);
+      if (res) acc.push(res);
       return acc;
     }, [] as string[]);
     if (fields.length) {
@@ -215,3 +222,12 @@ export const getTypeFromParameterName = (
   }
   return undefined;
 };
+
+export function getNestedValue(obj: Record<string, any>, key: string): any {
+  return key.split(".").reduce((acc, part) => {
+    if (acc && acc.hasOwnProperty(part)) {
+      return acc[part];
+    }
+    return undefined;
+  }, obj);
+}

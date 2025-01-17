@@ -1,4 +1,5 @@
-import { FocusProvider } from '@/components/FocusDrawer/focus-drawer';
+
+import { FocusProvider } from '@/components/FocusDrawer/item-provider';
 import { ReactNode } from 'react';
 
 interface ProvidersProps {

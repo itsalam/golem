@@ -20,11 +20,11 @@ export default function RootLayout({
     <html lang="en">
       <Providers>
         <body>
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <AppSidebar />
             <SidebarInset>
               <AppTopbar />
-              <div className="grid-box flex-1 overflow-y-hidden grid gap-3 items-center justify-items-center font-[family-name:var(--font-geist-sans)] bg-neutral-50">
+              <div className="grid-box flex-1 overflow-y-hidden grid gap-2 items-center justify-items-center font-[family-name:var(--font-geist-sans)] bg-neutral-50">
                 {children}
               </div>
             </SidebarInset>

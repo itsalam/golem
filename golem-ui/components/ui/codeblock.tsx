@@ -1,17 +1,29 @@
-import { FC } from "react";
+import { json, jsonParseLinter } from "@codemirror/lang-json";
+import { linter } from "@codemirror/lint";
+import CodeMirror, { basicSetup } from "@uiw/react-codemirror";
+import { UseFormReturn } from "react-hook-form";
+import { APIFormType } from "./api-form";
 
+export const Code = <T extends APIFormType>({
+  form,
+}: {
+  form: UseFormReturn<T>;
+}) => {
+  const values = form.watch();
 
-import { json } from '@codemirror/lang-json';
-import CodeMirror from '@uiw/react-codemirror';
-
-export const Code: FC<{code:string}> = ({ code }) => {
-    // const [value, setValue] = useState(code);
-
-    // // const onChange = useCallback((val, viewUpdate) => {
-    // //   console.log('val:', val);
-    // //   setValue(val);
-    // // }, []);
-
-    return <CodeMirror value={code} height="200px" extensions={[json()]} editable={false} />;
-  };
-  
+  return (
+    <CodeMirror
+      editable
+      value={JSON.stringify(values, null, 2)}
+      extensions={[...basicSetup(), json(), linter(jsonParseLinter())]}
+      className="rounded-md border"
+      onChange={(v) => {
+        try {
+          form.reset(JSON.parse(v));
+        } catch (e) {
+          console.log(e);
+        }
+      }}
+    />
+  );
+};

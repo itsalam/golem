@@ -1,6 +1,6 @@
 "use client";
 
-import { useFocusContext } from "@/components/FocusDrawer/focus-drawer";
+import { useFocusContext } from "@/components/FocusDrawer/item-provider";
 import IconInput from "@/components/inputs/IconInput";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Component, ItemType } from "@/lib/types";
+import { Component } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { ComponentProps, FC } from "react";
@@ -62,7 +62,7 @@ const ComponentCard: FC<
             </TableHeader>
             <TableBody>
               {components?.map((component) => (
-                <TableRow key={component.componentName} onClick={() => setFocusItem(component.versionedComponentId.componentId, ItemType.component, component)}>
+                <TableRow key={component.componentName} onClick={() => setFocusItem({componentId: component.versionedComponentId.componentId, metadata: component})}>
                   <TableCell className="font-medium">
                     {component.componentName}
                   </TableCell>
